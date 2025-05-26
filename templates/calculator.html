@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        
+        .calculator {
+            background-color: #333;
+            border-radius: 10px;
+            padding: 20px;
+            width: 320px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .display {
+            background-color: #eee;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: right;
+            font-size: 24px;
+            height: 30px;
+            overflow: hidden;
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 10px;
+        }
+        
+        button {
+            border: none;
+            border-radius: 5px;
+            padding: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            opacity: 0.8;
+        }
+        
+        .number {
+            background-color: #666;
+            color: white;
+        }
+        
+        .operation {
+            background-color: #ff9500;
+            color: white;
+        }
+        
+        .function {
+            background-color: #505050;
+            color: white;
+        }
+        
+        .clear {
+            background-color: #ff3b30;
+            color: white;
+        }
+        
+        .equals {
+            background-color: #4cd964;
+            color: white;
+            grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">C</button>
+            <button class="function" onclick="appendToDisplay('Math.sqrt(')">√</button>
+            <button class="function" onclick="appendToDisplay('Math.pow(')">x^y</button>
+            <button class="function" onclick="appendToDisplay('Math.sin(')">sin</button>
+            <button class="function" onclick="appendToDisplay('Math.cos(')">cos</button>
+            
+            <button class="number" onclick="appendToDisplay('7')">7</button>
+            <button class="number" onclick="appendToDisplay('8')">8</button>
+            <button class="number" onclick="appendToDisplay('9')">9</button>
+            <button class="operation" onclick="appendToDisplay('/')">/</button>
+            <button class="function" onclick="appendToDisplay('Math.tan(')">tan</button>
+            
+            <button class="number" onclick="appendToDisplay('4')">4</button>
+            <button class="number" onclick="appendToDisplay('5')">5</button>
+            <button class="number" onclick="appendToDisplay('6')">6</button>
+            <button class="operation" onclick="appendToDisplay('*')">×</button>
+            <button class="function" onclick="appendToDisplay('Math.log(')">log</button>
+            
+            <button class="number" onclick="appendToDisplay('1')">1</button>
+            <button class="number" onclick="appendToDisplay('2')">2</button>
+            <button class="number" onclick="appendToDisplay('3')">3</button>
+            <button class="operation" onclick="appendToDisplay('-')">-</button>
+            <button class="function" onclick="appendToDisplay('Math.ln(')">ln</button>
+            
+            <button class="number" onclick="appendToDisplay('0')">0</button>
+            <button class="number" onclick="appendToDisplay('.')">.</button>
+            <button class="operation" onclick="appendToDisplay('Math.PI')">π</button>
+            <button class="operation" onclick="appendToDisplay('+')">+</button>
+            <button class="function" onclick="appendToDisplay('Math.exp(')">e^x</button>
+            
+            <button class="equals" onclick="calculate()">=</button>
+            <button class="function" onclick="appendToDisplay('(')">(</button>
+            <button class="function" onclick="appendToDisplay(')')">)</button>
+            <button class="function" onclick="appendToDisplay('Math.E')">e</button>
+        </div>
+    </div>
+
+    <script>
+        let currentDisplay = '0';
+        const displayElement = document.getElementById('display');
+
+        function showOnDisplay() {
+            displayElement.textContent = currentDisplay;
+        }
+
+        function addToDisplay(value) {
+            if (currentDisplay === '0' && value !== '.') {
+                currentDisplay = value;
+            } else {
+                currentDisplay += value;
+            }
+            showOnDisplay();
+        }
+
+        function resetDisplay() {
+            currentDisplay = '0';
+            showOnDisplay();
+        }
+
+        async function computeResult() {
+            try {
+                const calculation = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ expression: currentDisplay }),
+                });
+                
+                const resultData = await calculation.json();
+                
+                if (resultData.error) {
+                    currentDisplay = 'Error';
+                } else {
+                    currentDisplay = resultData.result.toString();
+                }
+                showOnDisplay();
+            } catch {
+                currentDisplay = 'Error';
+                showOnDisplay();
+            }
+        }
+
+        window.appendToDisplay = addToDisplay;
+        window.clearDisplay = resetDisplay;
+        window.calculate = computeResult;
+        window.updateDisplay = showOnDisplay;
+    </script>
+</body>
+</html>
